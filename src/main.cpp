@@ -2,7 +2,6 @@
 
 #include <cstdarg>
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
 #include <random>
 #include <string>
