@@ -10,7 +10,9 @@ It has only been tested for linux, but it may also be working for windows and ap
 There are 3 keys that do something and everything else does the same
 
 B is to buy stock
+
 S is to sell stock
+
 and T is to terminate the game (Don't worry, this also saves the game)
 
 Everything else skips the current turn
