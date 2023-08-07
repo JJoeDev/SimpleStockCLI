@@ -4,6 +4,8 @@
 
 ![Showcase2](assets/simpleStockV1.png)
 
+![Showcase_gif](assets/2023-08-07 22-26-28.gif)
+
 This is a project that was made to cure my boredom, it is a simple CLI (command line interface) game that is mean't to act a little like a stock market.
 
 It is defineatly not even close to be accurate to a real stock market but it was a fun project to create
