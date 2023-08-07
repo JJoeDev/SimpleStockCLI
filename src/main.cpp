@@ -67,8 +67,8 @@ namespace utils{
     }
 }
 
-void loadSave(int money, int stockOwned,int stockPrice, bool save = true){
-    const char* saveFile = "StockSave";
+void loadSave(int& money, int& stockOwned, int& stockPrice, bool save = true){
+    const char* saveFile = "StockSave.json";
     if (save){
         Json::Value data;
         data["Money"] = money;
@@ -101,8 +101,10 @@ void loadSave(int money, int stockOwned,int stockPrice, bool save = true){
             stockOwned = data["StockOwned"].asInt();
             stockPrice = data["StockPrice"].asInt();
         }
-        else
+        else{
             std::cerr << "Error parsing JSON: " << errs << std::endl;
+            std::cin.get(); // Simply pause the application
+        }
 
         stream.close();
     }
