@@ -1,13 +1,16 @@
+#include <iostream>
+
 #include <cstdarg>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <random>
+#include <string>
+
+#include <json/json.h>
 #include <json/reader.h>
 #include <json/value.h>
 #include <json/writer.h>
-#include <random>
-#include <string>
-#include <json/json.h>
 
 #if defined(_WIN32) || defined(WIN32)
 #define clear "cls"
@@ -15,28 +18,21 @@
 #define clear "clear"
 #endif
 
-const char* saveFile = "StockSave";
-
-int money{5};
-int stockOwned{0};
-int stockPrice{1};
-
 namespace utils{
-    std::random_device rd;
-    std::default_random_engine engine(rd());
 
-    enum colors{
-        RED,
-        GREEN,
-        BLUE,
-        YELLOW,
-        MAGENTA,
-        CYAN,
-        WHITE,
-        BLACK
-    };
+    typedef std::string color;
+        color BLACK = "\033[1;30m";
+        color RED = "\033[1;31m";
+        color GREEN = "\033[1;32m";
+        color YELLOW = "\033[1;33m";
+        color BLUE = "\033[1;34m";
+        color MAGENTA = "\033[1;35m";
+        color CYAN = "\033[1;36m";
+        color WHITE = "\033[1;37m";
 
     int getRandom(const int minVal = 0, const int maxVal = 0){
+        std::random_device rd;
+        std::default_random_engine engine(rd());
         if (minVal == 0 && maxVal == 0){
             std::uniform_int_distribution<int> uniDist(-25, 25);
             return uniDist(engine);
@@ -54,42 +50,11 @@ namespace utils{
         return c;
     }
 
-    void printCol(const colors&& color, const unsigned int&& strings, const char* string, ...){
-        std::string colorCode;
-
-        switch (color){
-        case BLACK:
-            colorCode = "\033[1;30m";
-            break;
-        case RED:
-            colorCode = "\033[1;31m";
-            break;
-        case GREEN:
-            colorCode = "\033[1;32m";
-            break;
-        case YELLOW:
-            colorCode = "\033[1;33m";
-            break;
-        case BLUE:
-            colorCode = "\033[1;34m";
-            break;
-        case MAGENTA:
-            colorCode = "\033[1;35m";
-            break;
-        case CYAN:
-            colorCode = "\033[1;36m";
-            break;
-        case WHITE:
-            colorCode = "\033[1;37m";
-            break;
-        default:
-            break;
-        }
-
+    void printCol(const color& color, const unsigned int&& strings, const char* string, ...){
         va_list args;
         va_start(args, string);
 
-        std::string msg = colorCode + std::string(string);
+        std::string msg = color + std::string(string);
 
         for (int i = 1; i < strings; ++i){
             const char* newString = va_arg(args, const char*);
@@ -103,8 +68,8 @@ namespace utils{
     }
 }
 
-
-void loadSave(bool save = true){
+void loadSave(int money, int stockOwned,int stockPrice, bool save = true){
+    const char* saveFile = "StockSave";
     if (save){
         Json::Value data;
         data["Money"] = money;
@@ -139,36 +104,33 @@ void loadSave(bool save = true){
         }
         else
             std::cerr << "Error parsing JSON: " << errs << std::endl;
-        
+
         stream.close();
     }
 }
 
+
 int main(void){
-    std::system(clear);
-    utils::printCol(utils::WHITE, 1, "Simple Stock V0.1");
-
     int randNum{0};
+    char input;
+    int money{5};
+    int stockOwned{0};
+    int stockPrice{1};
 
-    loadSave(false);
+    loadSave(money, stockOwned, stockPrice, false);
 
-    bool running{true};
+    std::system(clear);
+    do {
+        utils::printCol(utils::WHITE, 1, "Simple Stock V0.1");
 
-    while (running){
         utils::printCol(utils::RED, 1, "key buy: B | key sell: S | key term: T | Anything else will skip this turn\n");
         utils::printCol(utils::GREEN, 2, "Money: ", utils::convToChar(money));
         utils::printCol(utils::GREEN, 2, "Stock Owned: ", utils::convToChar(stockOwned));
         utils::printCol(utils::RED, 2, "Price: ", utils::convToChar(stockPrice));
-
         std::cout << ">> ";
-
-        char input;
         std::cin >> input;
 
         switch(input){
-        case 't':
-            running = false;
-            break;
         case 'b':
             if (money >= stockPrice){
                 money -= stockPrice;
@@ -195,7 +157,9 @@ int main(void){
 
         system(clear);
     }
+    while (input != 't');
 
-    loadSave();
+    loadSave(money, stockOwned, stockPrice);
+
     return 0;
 }
