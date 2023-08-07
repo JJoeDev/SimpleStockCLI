@@ -1,5 +1,8 @@
+#include <cstring>
 #include <iostream>
+#include <algorithm>
 
+#include <array>
 #include <cstdarg>
 #include <cstdlib>
 #include <fstream>
@@ -17,8 +20,9 @@
 #define clear "clear"
 #endif
 
-namespace utils{
+constexpr unsigned int MaxHistorySize = 100;
 
+namespace utils{
     typedef std::string color;
         color BLACK = "\033[1;30m";
         color RED = "\033[1;31m";
@@ -63,7 +67,7 @@ namespace utils{
         va_end(args);
 
         msg += "\033[0m";
-        std::cout << msg << std::endl;
+        std::cout << msg;
     }
 }
 
@@ -110,6 +114,31 @@ void loadSave(int& money, int& stockOwned, int& stockPrice, bool save = true){
     }
 }
 
+void renderGraph(const std::array<int, MaxHistorySize>& prices){
+    constexpr unsigned char graphX = 20; // Initialize graph width
+    constexpr unsigned char graphY = 20; // Initialize graph height
+
+    int maxPrice = *std::max_element(prices.begin(), prices.end()); // Find largest value
+    int minPrice = *std::min_element(prices.begin(), prices.end()); // Find smallest value
+
+    for (int i = 0; i < graphY; ++i){
+        double threshold = maxPrice - (i * (maxPrice - minPrice) / static_cast<double>(graphY - 1)); // The threshold represents the price level at which each row of the graph is drawn
+
+        utils::printCol(utils::GREEN, 3, " ", utils::convToChar(static_cast<int>(threshold)), "\t| ");
+
+        for (int price : prices){
+            char c = ' ';
+            if (price >= threshold)
+                c = '#';
+            
+            std::cout << "\033[1;32m" << c << "\033[0m";
+        }
+
+        std::cout << '\n';
+    }
+
+    std::cout << '\n';
+}
 
 int main(void){
     int randNum{0};
@@ -120,14 +149,25 @@ int main(void){
 
     loadSave(money, stockOwned, stockPrice, false);
 
-    std::system(clear);
-    do {
-        utils::printCol(utils::WHITE, 1, "Simple Stock V0.1");
+    std::array<int, MaxHistorySize> priceHistory;
+    unsigned char index;
 
-        utils::printCol(utils::RED, 1, "key buy: B | key sell: S | key term: T | Anything else will skip this turn\n");
-        utils::printCol(utils::GREEN, 2, "Money: ", utils::convToChar(money));
-        utils::printCol(utils::GREEN, 2, "Stock Owned: ", utils::convToChar(stockOwned));
-        utils::printCol(utils::RED, 2, "Price: ", utils::convToChar(stockPrice));
+    for (int i = 0; i < MaxHistorySize; ++i){
+        priceHistory[i] = 0;
+    }
+
+    std::system(clear);
+    utils::printCol(utils::WHITE, 1, " Simple Stock V1.0\n");
+
+    do {
+
+        utils::printCol(utils::RED, 1, " key buy: B | key sell: S | key term: T | Anything else will skip this turn\n\n");
+        utils::printCol(utils::GREEN, 3, " Money: ", utils::convToChar(money), "\n");
+        utils::printCol(utils::GREEN, 3, " Stock Owned: ", utils::convToChar(stockOwned), "\n");
+        utils::printCol(utils::RED, 3, " Price: ", utils::convToChar(stockPrice), "\n\n\n");
+
+        renderGraph(priceHistory);
+
         std::cout << ">> ";
         std::cin >> input;
 
@@ -155,6 +195,9 @@ int main(void){
 
         if (stockPrice < 1)
             stockPrice = 1;
+        
+        priceHistory[index] = stockPrice;
+        index = (index + 1) % MaxHistorySize;
 
         system(clear);
     }
